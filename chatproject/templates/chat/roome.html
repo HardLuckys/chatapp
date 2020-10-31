@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+  <link rel="stylesheet" href="{% static 'css/room.css' %}">
+  <div class="col-lg-6 mx-auto my-5 border border-dark rounded bg-secondary py-3 px-0">
+    <div class="col-11 bg-dark text-light rounded mx-auto py-3">
+      <h4 class="text-center text-light" id="counter">Кол-во сообщений: {{ messages.count }}</h4>
+    </div>
+    <div class="form-elegant scrollbar" id="messages_area" style="height: 620px;">
+      {% for message in messages %}
+      <div class="col-11 bg-dark rounded text-light py-2 my-3 mx-auto">
+        <img class="rounded rounded-circle" style="height:50px; width:50px;" src="{{ message.user.avatar.url }}">
+        <p>От: {{ message.user.email }} В: {{ message.date }} {{ message.message|safe }}</p>
+        {% if message.image %}
+        <img class="col-12" src="{{ message.image.url }}">
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    <input class="form-control col-11 my-5 mx-auto" id="chat-message-input" type="text">
+    <input class="d-block col-11 btn btn-success my-3 mx-auto" id="chat-message-submit" type="button" value="Отправить">
+    <input type="file" onchange="encodeImage(this, 'True')" class="btn btn-info d-block col-11 mx-auto" id="image">
+  </div>
+    {{ room_name|json_script:"room-name" }}
+    <script>
+        const roomName = JSON.parse(document.getElementById('room-name').textContent);
+
+        const chatSocket = new WebSocket(
+            'ws://'
+            + window.location.host
+            //+ '/ws/chat/'
+            + '/ws' + window.location.pathname
+            //+ roomName
+            //+ '/'
+        );
+
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            if(data.image != 'None'){
+              image = '<img class="col-12" src="' + data.image + '">'
+            } else{
+              image=''
+            }
+            $('#messages_area').append('<div class="col-11 bg-dark rounded text-light py-2 my-3 mx-auto" id="chat_msg"><img class="rounded rounded-circle" style="height:50px; width:50px;" src="' + data.avatar + '"><p>От: ' + data.username + ' В: ' + data.date + ' ' + data.message + ' ' + image + '</p></div>');
+            $('<h4 class="text-center text-light">Кол-во сообщений: ' + data.count + '</h4>').replaceAll($("#counter"));
+        };
+
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+        document.querySelector('#chat-message-input').focus();
+        document.querySelector('#chat-message-input').onkeyup = function(e) {
+            if (e.keyCode === 13) {  // enter, return
+                document.querySelector('#chat-message-submit').click();
+            }
+        };
+        function encodeImage(element, bool) {
+          console.log(element);
+            if (bool != 'False') {
+              window.file = element.files[0];
+              var reader = new FileReader();
+              reader.onloadend = function() {
+                window.imagebase = reader.result
+                console.log(imagebase);
+                }
+              reader.readAsDataURL(file);
+            }
+        };
+        document.querySelector('#chat-message-submit').onclick = function(e) {
+            const messageInputDom = document.querySelector('#chat-message-input');
+            const message = messageInputDom.value;
+            const imageInputDom = document.querySelector('#image');
+            if(typeof imagebase !== 'undefined'){
+              imagebase
+            }else{
+              imagebase='None'
+            };
+            chatSocket.send(JSON.stringify({
+                'message': message,
+                'image': imagebase,
+            }));
+            messageInputDom.value = '';
+            typeof window.imagebase == 'undefined'
+        };
+    </script>
+{% endblock %}
