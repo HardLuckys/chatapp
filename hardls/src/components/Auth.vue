@@ -26,7 +26,6 @@ export default {
     }
   },
   mounted () {
-
     if (this.authorized = true && localStorage.getItem('token') !== null){
       this.$router.push({name: 'ChatRooms'})
     } else {
@@ -48,7 +47,7 @@ export default {
           }
         ).then(response => (
           this.ChatRooms(),
-          localStorage.setItem('token', response.data['auth_token']),
+          localStorage.setItem('token', response.data['token']),
           this.authorized = true,
           console.log(response.data)
         )).catch(error =>

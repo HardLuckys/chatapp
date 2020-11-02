@@ -15,13 +15,13 @@ Vue.use(Router)
 export default new Router({
   mode: 'history',
   routes: [
-      /*{
-        path: '/',
-        name: 'Auth',
-        component: Auth
-    },*/
     {
       path: '/',
+      name: 'Auth',
+      component: Auth
+    },
+    {
+      path: '/chat',
       name: 'ChatRooms',
       component: ChatRooms
     }

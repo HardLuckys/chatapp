@@ -8,6 +8,7 @@ from datetime import datetime
 import base64
 from django.core.files.base import ContentFile
 from rest_framework.authtoken.models import Token
+from django.utils import formats
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
 
@@ -54,7 +55,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             {
                 'type': 'chat_message',
                 'message': content['message'],
-                'user': mess.user.username
+                'user': mess.user.username,
+                'date': formats.date_format(mess.date, format="t N Y H:i")
             }
         )
 
@@ -62,7 +64,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         message = event['message']
         await self.send(json.dumps({
             'message': message,
-            'user': mess.user.username
+            'user': mess.user.username,
+            'date': formats.date_format(mess.date, format="t N Y H:i")
         }))
 
     async def user_connect(self, event):
